@@ -1,0 +1,48 @@
+* {
+  box-sizing: border-box;
+}
+
+/* OUTER BOX STYLES */
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 160px;
+}
+
+/* INNER BOXES STYLES */
+.buttons {
+  display: flex;
+  flex-direction: row;
+}
+
+.buttons > div > div {
+  border: 1px solid black;
+}
+
+.buttons > div > div:hover {
+  cursor: pointer;
+}
+
+.display {
+  height: 50px;
+  border: 1px solid black;
+}
+
+.left {
+    width: 75%;
+    height: 160px;
+}
+
+.left > div {
+  float: left;
+  height: 25%;
+  width: 33.3%;
+}
+
+.right {
+  width: 25%;
+}
+
+.right > div {
+  height: 20%;
+}
