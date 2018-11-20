@@ -8,7 +8,7 @@ function displayButtonValue(e) {
   let buttonValue = e.target.textContent;
 
   (buttonValue === DEL) ? input.pop() : input.push(buttonValue);
-  display.textContent = Array.from(input).join("");
+  display.textContent = input.join("");
 }
 
 let buttons = document.querySelectorAll(".buttons > div > div");
