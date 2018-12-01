@@ -11,7 +11,7 @@ function processOperator(e) {
   }
 
   if (numStr) {
-    input.push(numStr);
+    input.push(numStr); // push num once an operator is pressed
   }
 
   if (input[input.length - 1].match(/[\+\-\xD7\xF7]/)) {
@@ -26,10 +26,6 @@ function processOperator(e) {
 function processNum(e) {
   let num = e.target.textContent;
 
-  if (num === "0" && !numStr) {
-    return; // do not display leading zero for whole numbers
-  }
-
   if (input.length === 1) {
       input = []; // delete result from previous computation
   }
@@ -40,13 +36,17 @@ function processNum(e) {
     } else if (numStr.includes(".")) {
       return; // do not allow multiple decimal points
     }
+  } else if (num.match(/[0-9]/)) {
+    if (numStr === "0") {
+      numStr = ""; // do not display leading zero for whole numbers
+    }
   }
 
   numStr += num;
   display.textContent = input.join("") + numStr;
 }
 
-function evaluateInput(e) {
+function operate(e) {
   if (!numStr && input.length === 0) {
     return;
   }
@@ -62,10 +62,10 @@ function evaluateInput(e) {
   let expr = input.join(" ");
   expr = expr.replace(/\xD7/g, "*"); // replace ASCII multiply symbol with *
   expr = expr.replace(/\xF7/g, "/"); // replace ASCII divide symbol with /
-  let answer = eval(expr);
+  let answer = eval(expr).toString();
 
   display.textContent = answer;
-  input = [answer.toString()];
+  input = [answer]; // store answer as input should the user want to operate on it
 
   numStr = "";
 }
@@ -88,7 +88,7 @@ operators.forEach(operator => {
 });
 
 let equals = document.querySelector("#equals");
-equals.addEventListener("click", evaluateInput);
+equals.addEventListener("click", operate);
 
 let ac = document.querySelector("#ac");
 ac.addEventListener("click", clearAll);
