@@ -1,10 +1,15 @@
+/* CONSTANTS */
+const BACKSPACE = "Backspace";
+const ENTER = "Enter";
+
 /* GLOBALS */
 let input = [];
 let numStr = "";
 let display = document.querySelector(".display");
+let isComputed = false;
 
-function processOperator(e) {
-  let operator = e.target.textContent;
+function processOperator(operator) {
+  isComputed = false;
 
   if (!numStr && input.length === 0) {
     return;
@@ -14,8 +19,15 @@ function processOperator(e) {
     input.push(numStr); // push num once an operator is pressed
   }
 
-  if (input[input.length - 1].match(/[\+\-\xD7\xF7]/)) {
+  if (input[input.length - 1].match(/^[\+\-\xD7\xF7\*\/]$/)) {
     input.pop(); // pop last operator if pressing another operator consecutively
+  }
+
+  // if pressing * or /, replace with x and + for proper display
+  if (operator === "*") {
+    operator = String.fromCharCode(0xD7);
+  } else if (operator === "/") {
+    operator = String.fromCharCode(0xF7);
   }
 
   input.push(operator);
@@ -23,8 +35,8 @@ function processOperator(e) {
   display.textContent = input.join("");
 }
 
-function processNum(e) {
-  let num = e.target.textContent;
+function processNum(num) {
+  isComputed = false;
 
   if (input.length === 1) {
       input = []; // delete result from previous computation
@@ -55,7 +67,7 @@ function operate(e) {
     input.push(numStr);
   }
 
-  if (input[input.length - 1].match(/[\+\-\xD7\xF7]/)) {
+  if (input[input.length - 1].match(/^[\+\-\xD7\xF7]$/)) {
     input.pop(); // pop last operator if no operand to its right
   }
 
@@ -68,6 +80,39 @@ function operate(e) {
   input = [answer]; // store answer as input should the user want to operate on it
 
   numStr = "";
+  isComputed = true;
+}
+
+function deletePrevious() {
+  if (display.textContent === "0" || isComputed) {
+    return;
+  }
+
+  let displayArr = Array.from(display.textContent);
+  let popped = displayArr.pop();
+  display.textContent = displayArr.join("");
+
+  if (popped.match(/[\+\-\xD7\xF7]/)) {
+    input.pop();
+  } else {
+    if (numStr) {
+      let numArr = Array.from(numStr);
+      numArr.pop();
+      numStr = numArr.join("");
+    } else {
+      let operand = Array.from(input[input.length - 1]);
+      operand.pop();
+      input[input.length - 1] = operand.join("");
+
+      if (operand.length === 0) {
+        input.pop();
+      }
+    }
+
+    if (input.length === 0 && numStr.length === 0) {
+      display.textContent = "0"
+    }
+  }
 }
 
 function clearAll(e) {
@@ -76,15 +121,58 @@ function clearAll(e) {
   display.textContent = "0";
 }
 
-/* EVENT LISTENERS */
+function processKey(e) {
+  switch (e.key) {
+    case "0":
+    case "1":
+    case "2":
+    case "3":
+    case "4":
+    case "5":
+    case "6":
+    case "7":
+    case "8":
+    case "9":
+    case "0":
+    case ".":
+      processNum(e.key);
+      break;
+
+    case "+":
+    case "-":
+    case "*":
+    case "/":
+      e.preventDefault(); // prevent divide button (/) from starting browser's find functionality
+      processOperator(e.key);
+      break;
+
+    case "=":
+    case ENTER:
+      operate();
+      break;
+
+    case BACKSPACE:
+      deletePrevious();
+      break;
+
+    default:
+      break;
+  }
+}
+
+/* EVENT LISTENERS FOR MOUSE CLICK */
 let nums = document.querySelectorAll(".num");
 nums.forEach(num => {
-  num.addEventListener("click", processNum);
+  num.addEventListener("click", (e) => {
+    processNum(e.target.textContent);
+  });
 });
 
 let operators = document.querySelectorAll(".operator");
 operators.forEach(operator => {
-  operator.addEventListener("click", processOperator);
+  operator.addEventListener("click", (e) => {
+    processOperator(e.target.textContent);
+  });
 });
 
 let equals = document.querySelector("#equals");
@@ -92,3 +180,6 @@ equals.addEventListener("click", operate);
 
 let ac = document.querySelector("#ac");
 ac.addEventListener("click", clearAll);
+
+/* EVENT LISTENER FOR KEY PRESS */
+document.addEventListener("keydown", processKey);
