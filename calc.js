@@ -152,7 +152,11 @@ function processKey(e) {
       break;
 
     case BACKSPACE:
+<<<<<<< HEAD
       e.preventDefault(); // prevent browser from going back to previous page
+=======
+      e.preventDefault(); prevent browser from going back to previous page
+>>>>>>> 5628319b4bd5aa5f930684317157e5b6f6b6484a
       deletePrevious();
       break;
 
