@@ -1,3 +1,7 @@
+/* TODO */
+// Add support for percent
+// Add support for +/-
+
 /* CONSTANTS */
 const BACKSPACE = "Backspace";
 const ENTER = "Enter";
@@ -16,11 +20,11 @@ function processOperator(operator) {
   }
 
   if (numStr) {
-    input.push(numStr); // push num once an operator is pressed
-  }
+    if (numStr.match(/\.$/)) {
+      numStr = numStr.slice(0, -1); // delete trailing decimal point
+    }
 
-  if (input[input.length - 1].match(/^[\+\-\xD7\xF7\*\/]$/)) {
-    input.pop(); // pop last operator if pressing another operator consecutively
+    input.push(numStr); // push num once an operator is pressed
   }
 
   // if pressing * or /, replace with x and + for proper display
@@ -28,6 +32,10 @@ function processOperator(operator) {
     operator = String.fromCharCode(0xD7);
   } else if (operator === "/") {
     operator = String.fromCharCode(0xF7);
+  }
+
+  if (input[input.length - 1].match(/^[\+\-\xD7\xF7]$/)) {
+    input.pop(); // pop last operator if pressing another operator consecutively
   }
 
   input.push(operator);
@@ -92,17 +100,15 @@ function deletePrevious() {
   let popped = displayArr.pop();
   display.textContent = displayArr.join("");
 
-  if (popped.match(/[\+\-\xD7\xF7]/)) {
+  if (popped.match(/^[\+\-\xD7\xF7]$/)) {
     input.pop();
   } else {
     if (numStr) {
-      let numArr = Array.from(numStr);
-      numArr.pop();
-      numStr = numArr.join("");
+      numStr = numStr.slice(0, -1);
     } else {
-      let operand = Array.from(input[input.length - 1]);
-      operand.pop();
-      input[input.length - 1] = operand.join("");
+      let operand = input[input.length - 1];
+      operand = operand.slice(0, -1);
+      input[input.length - 1] = operand;
 
       if (operand.length === 0) {
         input.pop();
