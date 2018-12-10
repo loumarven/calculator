@@ -1,7 +1,3 @@
-/* TODO */
-// Add support for percent
-// Add support for +/-
-
 /* CONSTANTS */
 const BACKSPACE = "Backspace";
 const ENTER = "Enter";
@@ -66,6 +62,24 @@ function processNum(num) {
   display.textContent = input.join("") + numStr;
 }
 
+function putSign(e) {
+  if (isComputed) { // put sign to answer
+    if (!input[0].match(/^\-/)) {
+      input[0] = "-" + input[0];
+    } else {
+      input[0] = input[0].slice(1);
+    }
+  } else {
+    if (!numStr.match(/^\-/)) {
+      numStr = "-" + numStr;
+    } else {
+      numStr = numStr.slice(1);
+    }
+  }
+
+  display.textContent = input.join("") + numStr;
+}
+
 function operate(e) {
   if (!numStr && input.length === 0) {
     return;
@@ -100,11 +114,18 @@ function deletePrevious() {
   let popped = displayArr.pop();
   display.textContent = displayArr.join("");
 
+  if (!popped) {
+    return; // if pressing delete even if display is cleared already
+  }
+
   if (popped.match(/^[\+\-\xD7\xF7]$/)) {
     input.pop();
   } else {
     if (numStr) {
       numStr = numStr.slice(0, -1);
+      if (numStr === "-") { // reset numStr if negative sign remains
+        numStr = "";
+      }
     } else {
       let operand = input[input.length - 1];
       operand = operand.slice(0, -1);
@@ -114,10 +135,11 @@ function deletePrevious() {
         input.pop();
       }
     }
+  }
 
-    if (input.length === 0 && numStr.length === 0) {
-      display.textContent = "0"
-    }
+  if (input.length === 0 && numStr.length === 0 ||
+      display.textContent === "-") { // reset display if negative sign remains
+    display.textContent = "0";
   }
 }
 
@@ -182,11 +204,19 @@ operators.forEach(operator => {
   });
 });
 
+let sign = document.querySelector("#plusmn");
+sign.addEventListener("click", putSign);
+
 let equals = document.querySelector("#equals");
 equals.addEventListener("click", operate);
 
 let ac = document.querySelector("#ac");
 ac.addEventListener("click", clearAll);
 
-/* EVENT LISTENER FOR KEY PRESS */
+let del = document.querySelector("#del");
+del.addEventListener("click", (e) => {
+  deletePrevious();
+})
+
+/* SUPPORT FOR KEYBOARD PRESS */
 document.addEventListener("keydown", processKey);
