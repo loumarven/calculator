@@ -124,7 +124,7 @@ function operate(e) {
   expr = expr.replace(/\xF7/g, "/"); // replace ASCII divide symbol with /
   let answer = eval(expr).toString();
 
-  if (answer === "Infinity") { // handle division by zero
+  if (answer.includes("Infinity")) { // handle division by zero
     answer = "Not a number";
   }
 
