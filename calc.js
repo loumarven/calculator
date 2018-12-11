@@ -1,3 +1,10 @@
+/* TODO
+  1. Set max input length
+  2. Set max operand value
+  3. Set max decimal place for answer
+*/
+
+
 /* CONSTANTS */
 const BACKSPACE = "Backspace";
 const ENTER = "Enter";
@@ -5,10 +12,21 @@ const ENTER = "Enter";
 /* GLOBALS */
 let input = [];
 let numStr = "";
-let display = document.querySelector(".display");
+let inputDisplay = document.querySelector(".input-display");
+let answerDisplay = document.querySelector(".answer-display");
 let isComputed = false;
 
 function processOperator(operator) {
+  if (isComputed) {
+    // visual cue to show previous answer when inputting a new calculation
+    answerDisplay.style.fontStyle = "italic";
+    answerDisplay.style.color = "#bdc3c7";
+
+    if (input[0] === "Not a number") {
+      return;
+    }
+  }
+
   isComputed = false;
 
   if (!numStr && input.length === 0) {
@@ -36,10 +54,16 @@ function processOperator(operator) {
 
   input.push(operator);
   numStr = "";
-  display.textContent = input.join("");
+  inputDisplay.textContent = input.join("");
 }
 
 function processNum(num) {
+  if (isComputed) {
+    // visual cue to show previous answer when inputting a new calculation
+    answerDisplay.style.fontStyle = "italic";
+    answerDisplay.style.color = "#bdc3c7";
+  }
+
   isComputed = false;
 
   if (input.length === 1) {
@@ -59,12 +83,14 @@ function processNum(num) {
   }
 
   numStr += num;
-  display.textContent = input.join("") + numStr;
+  inputDisplay.textContent = input.join("") + numStr;
 }
 
 function putSign(e) {
   if (isComputed) { // put sign to answer
-    if (!input[0].match(/^\-/)) {
+    if (input[0] === "Not a number") {
+      return;
+    } else if (!input[0].match(/^\-/)) {
       input[0] = "-" + input[0];
     } else {
       input[0] = input[0].slice(1);
@@ -77,7 +103,7 @@ function putSign(e) {
     }
   }
 
-  display.textContent = input.join("") + numStr;
+  inputDisplay.textContent = input.join("") + numStr;
 }
 
 function operate(e) {
@@ -98,21 +124,28 @@ function operate(e) {
   expr = expr.replace(/\xF7/g, "/"); // replace ASCII divide symbol with /
   let answer = eval(expr).toString();
 
-  display.textContent = answer;
+  if (answer === "Infinity") { // handle division by zero
+    answer = "Not a number";
+  }
+
+  answerDisplay.style.fontStyle = "normal";
+  answerDisplay.style.color = "#ecf0f1";
+  answerDisplay.textContent = answer;
+
   input = [answer]; // store answer as input should the user want to operate on it
 
   numStr = "";
   isComputed = true;
 }
 
-function deletePrevious() {
-  if (display.textContent === "0" || isComputed) {
+function deleteOnce() {
+  if (inputDisplay.textContent === "" || isComputed) {
     return;
   }
 
-  let displayArr = Array.from(display.textContent);
+  let displayArr = Array.from(inputDisplay.textContent);
   let popped = displayArr.pop();
-  display.textContent = displayArr.join("");
+  inputDisplay.textContent = displayArr.join("");
 
   if (!popped) {
     return; // if pressing delete even if display is cleared already
@@ -125,6 +158,7 @@ function deletePrevious() {
       numStr = numStr.slice(0, -1);
       if (numStr === "-") { // reset numStr if negative sign remains
         numStr = "";
+        inputDisplay.textContent = displayArr.join("").slice(0, -1);
       }
     } else {
       let operand = input[input.length - 1];
@@ -137,16 +171,19 @@ function deletePrevious() {
     }
   }
 
-  if (input.length === 0 && numStr.length === 0 ||
-      display.textContent === "-") { // reset display if negative sign remains
-    display.textContent = "0";
+  if (input.length === 0 && !numStr ||
+      inputDisplay.textContent === "-") { // reset display if negative sign remains
+    answerDisplay.textContent = "";
   }
 }
 
 function clearAll(e) {
   input = [];
   numStr = "";
-  display.textContent = "0";
+  inputDisplay.textContent = "";
+  answerDisplay.style.fontStyle = "normal";
+  answerDisplay.style.color = "#ecf0f1";
+  answerDisplay.textContent = "";
 }
 
 function processKey(e) {
@@ -161,7 +198,6 @@ function processKey(e) {
     case "7":
     case "8":
     case "9":
-    case "0":
     case ".":
       processNum(e.key);
       break;
@@ -181,7 +217,7 @@ function processKey(e) {
 
     case BACKSPACE:
       e.preventDefault(); // prevent browser from going back to previous page
-      deletePrevious();
+      deleteOnce();
       break;
 
     default:
@@ -215,7 +251,7 @@ ac.addEventListener("click", clearAll);
 
 let del = document.querySelector("#del");
 del.addEventListener("click", (e) => {
-  deletePrevious();
+  deleteOnce();
 })
 
 /* SUPPORT FOR KEYBOARD PRESS */
