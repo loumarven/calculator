@@ -20,13 +20,12 @@
   border: 1px solid black;
   color: #ecf0f1;
   height: 120px;
-  padding: 5px;
   text-align: right;
   word-wrap: break-word;
 }
 
 .answer-display {
-  font-size: 2em;
+  font-size: 1.75em;
   height: 35%;
 }
 

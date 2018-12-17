@@ -1,13 +1,10 @@
-/* TODO
-  1. Set max input length
-  2. Set max operand value
-  3. Set max decimal place for answer
-*/
-
-
 /* CONSTANTS */
 const BACKSPACE = "Backspace";
 const ENTER = "Enter";
+const MAXNUM = 999999999;
+const MAXINPUTLEN = 45;
+const MAXDECIMALPLACES = 10;
+const MAXANSWERLEN = 13;
 
 /* GLOBALS */
 let input = [];
@@ -28,6 +25,10 @@ function processOperator(operator) {
   }
 
   isComputed = false;
+
+  if (input.join("").length > MAXINPUTLEN) {
+    return;
+  }
 
   if (!numStr && input.length === 0) {
     return;
@@ -65,6 +66,21 @@ function processNum(num) {
   }
 
   isComputed = false;
+
+  if (parseInt(numStr) > MAXNUM) {
+    return;
+  }
+
+  // if floating point, only allow up to 8 decimal places
+  if (numStr && numStr.includes(".")) {
+    if (numStr.split(".")[1].length >= MAXDECIMALPLACES) {
+      return;
+    }
+  }
+
+  if (input.join("").length > MAXINPUTLEN) {
+    return;
+  }
 
   if (input.length === 1) {
       input = []; // delete result from previous computation
@@ -112,11 +128,17 @@ function operate(e) {
   }
 
   if (numStr) {
+    if (numStr.match(/\.$/)) {
+      numStr = numStr.slice(0, -1); // delete trailing decimal point
+    }
+
     input.push(numStr);
+    inputDisplay.textContent = input.join("");
   }
 
   if (input[input.length - 1].match(/^[\+\-\xD7\xF7]$/)) {
     input.pop(); // pop last operator if no operand to its right
+    inputDisplay.textContent = input.join("") + numStr;
   }
 
   let expr = input.join(" ");
@@ -126,6 +148,19 @@ function operate(e) {
 
   if (answer.includes("Infinity")) { // handle division by zero
     answer = "Not a number";
+  }
+
+  // prevent answer from overflowing on display
+  if (answer.toString().length > MAXANSWERLEN) {
+    if (answer.includes(".")) {
+      let numArr = answer.split(".");
+      let decPlace = MAXANSWERLEN - numArr[0].length;
+      answer = parseFloat(answer).toFixed(decPlace);
+      answer = parseFloat(answer).toString(); // parseFloat again to remove trailing zeros in decimal
+    } else { // if int length is greater than MAXANSWERLEN
+      answer = parseFloat(answer).toPrecision(MAXANSWERLEN - 4);
+      answer = answer.toString();
+    }
   }
 
   answerDisplay.style.fontStyle = "normal";
