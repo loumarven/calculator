@@ -16,8 +16,7 @@ let isComputed = false;
 function processOperator(operator) {
   if (isComputed) {
     // visual cue to show previous answer when inputting a new calculation
-    answerDisplay.style.fontStyle = "italic";
-    answerDisplay.style.color = "#bdc3c7";
+    answerDisplay.classList.add("done-computing");
 
     if (input[0] === "Not a number") {
       return;
@@ -61,8 +60,7 @@ function processOperator(operator) {
 function processNum(num) {
   if (isComputed) {
     // visual cue to show previous answer when inputting a new calculation
-    answerDisplay.style.fontStyle = "italic";
-    answerDisplay.style.color = "#bdc3c7";
+    answerDisplay.classList.add("done-computing");
 
     input = []; // delete result from previous computation
   }
@@ -102,6 +100,7 @@ function processNum(num) {
     if (!input[input.length - 1].match(/^[\+\-\xD7\xF7]$/)) {
       input[input.length - 1] += numStr;
       inputDisplay.textContent = input.join("");
+      numStr = "";
       return;
     }
   }
@@ -114,13 +113,17 @@ function putSign(e) {
     if (input[0] === "Not a number") {
       return;
     } else if (!input[0].match(/^\-/)) {
-      input[0] = "-" + input[0];
+      if (input[0] != "0") {
+        input[0] = "-" + input[0];
+      }
     } else {
       input[0] = input[0].slice(1);
     }
   } else {
     if (!numStr.match(/^\-/)) {
-      numStr = "-" + numStr;
+      if (numStr != "0") {
+        numStr = "-" + numStr;
+      }
     } else {
       numStr = numStr.slice(1);
     }
@@ -139,11 +142,7 @@ function operate(e) {
       numStr = numStr.slice(0, -1); // delete trailing decimal point
     }
 
-    // push numStr to input only if last input is an operator
-    if (input[input.length - 1].match(/^[\+\-\xD7\xF7]$/)) {
-      input.push(numStr);
-    }
-
+    input.push(numStr);
     inputDisplay.textContent = input.join("");
   }
 
@@ -174,8 +173,8 @@ function operate(e) {
     }
   }
 
-  answerDisplay.style.fontStyle = "normal";
-  answerDisplay.style.color = "#ecf0f1";
+  answerDisplay.classList.remove("done-computing");
+  answerDisplay.classList.add("answer-show");
   answerDisplay.textContent = answer;
 
   input = [answer]; // store answer as input should the user want to operate on it
@@ -220,16 +219,18 @@ function deleteOnce() {
   if (input.length === 0 && !numStr ||
       inputDisplay.textContent === "-") { // reset display if negative sign remains
     answerDisplay.textContent = "";
+    ac.textContent = "AC";
   }
 }
 
-function clearAll(e) {
+function clearAll() {
   input = [];
   numStr = "";
   inputDisplay.textContent = "";
   answerDisplay.style.fontStyle = "normal";
   answerDisplay.style.color = "#ecf0f1";
   answerDisplay.textContent = "";
+  ac.textContent = "AC";
 }
 
 function processKey(e) {
@@ -245,6 +246,7 @@ function processKey(e) {
     case "8":
     case "9":
     case ".":
+      ac.textContent = "C";
       processNum(e.key);
       break;
 
@@ -266,6 +268,11 @@ function processKey(e) {
       deleteOnce();
       break;
 
+    case "c":
+    case "C":
+      clearAll();
+      break;
+
     default:
       break;
   }
@@ -275,6 +282,7 @@ function processKey(e) {
 let nums = document.querySelectorAll(".num");
 nums.forEach(num => {
   num.addEventListener("click", (e) => {
+    ac.textContent = "C";
     processNum(e.target.textContent);
   });
 });
@@ -293,7 +301,9 @@ let equals = document.querySelector("#equals");
 equals.addEventListener("click", operate);
 
 let ac = document.querySelector("#ac");
-ac.addEventListener("click", clearAll);
+ac.addEventListener("click", (e) => {
+  clearAll();
+});
 
 let del = document.querySelector("#del");
 del.addEventListener("click", (e) => {

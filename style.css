@@ -29,6 +29,16 @@
   height: 35%;
 }
 
+.answer-show {
+  color: inherit;
+  font-style: normal;
+}
+
+.done-computing {
+  color: #bdc3c7;
+  font-style: italic;
+}
+
 .input-display {
   font-size: 1.25em;
   height: 65%;
