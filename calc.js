@@ -63,6 +63,8 @@ function processNum(num) {
     // visual cue to show previous answer when inputting a new calculation
     answerDisplay.style.fontStyle = "italic";
     answerDisplay.style.color = "#bdc3c7";
+
+    input = []; // delete result from previous computation
   }
 
   isComputed = false;
@@ -82,10 +84,6 @@ function processNum(num) {
     return;
   }
 
-  if (input.length === 1) {
-      input = []; // delete result from previous computation
-  }
-
   if (num === ".") {
     if (!numStr) {
       num = "0." // prepend zero if num is less than 1
@@ -99,6 +97,15 @@ function processNum(num) {
   }
 
   numStr += num;
+  if (input.length > 0) {
+    // append num to last num input (happens when doing deleteOnce on operator)
+    if (!input[input.length - 1].match(/^[\+\-\xD7\xF7]$/)) {
+      input[input.length - 1] += numStr;
+      inputDisplay.textContent = input.join("");
+      return;
+    }
+  }
+
   inputDisplay.textContent = input.join("") + numStr;
 }
 
@@ -132,7 +139,11 @@ function operate(e) {
       numStr = numStr.slice(0, -1); // delete trailing decimal point
     }
 
-    input.push(numStr);
+    // push numStr to input only if last input is an operator
+    if (input[input.length - 1].match(/^[\+\-\xD7\xF7]$/)) {
+      input.push(numStr);
+    }
+
     inputDisplay.textContent = input.join("");
   }
 
@@ -151,14 +162,14 @@ function operate(e) {
   }
 
   // prevent answer from overflowing on display
-  if (answer.toString().length > MAXANSWERLEN) {
+  if (answer.length > MAXANSWERLEN) {
     if (answer.includes(".")) {
       let numArr = answer.split(".");
       let decPlace = MAXANSWERLEN - numArr[0].length;
       answer = parseFloat(answer).toFixed(decPlace);
       answer = parseFloat(answer).toString(); // parseFloat again to remove trailing zeros in decimal
     } else { // if int length is greater than MAXANSWERLEN
-      answer = parseFloat(answer).toPrecision(MAXANSWERLEN - 4);
+      answer = parseInt(answer).toPrecision(MAXANSWERLEN - 4);
       answer = answer.toString();
     }
   }
