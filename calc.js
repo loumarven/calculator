@@ -6,6 +6,7 @@ const MAXINPUTLEN = 45;
 const MAXDECIMALPLACES = 10;
 const MAXANSWERLEN = 13;
 
+
 /* GLOBALS */
 let input = [];
 let numStr = "";
@@ -13,9 +14,11 @@ let inputDisplay = document.querySelector(".input-display");
 let answerDisplay = document.querySelector(".answer-display");
 let isComputed = false;
 
+
 function processOperator(operator) {
   if (isComputed) {
     // visual cue to show previous answer when inputting a new calculation
+    answerDisplay.classList.remove("answer-show");
     answerDisplay.classList.add("done-computing");
 
     if (input[0] === "Not a number") {
@@ -57,9 +60,11 @@ function processOperator(operator) {
   inputDisplay.textContent = input.join("");
 }
 
+
 function processNum(num) {
   if (isComputed) {
     // visual cue to show previous answer when inputting a new calculation
+    answerDisplay.classList.remove("answer-show");
     answerDisplay.classList.add("done-computing");
 
     input = []; // delete result from previous computation
@@ -99,14 +104,13 @@ function processNum(num) {
     // append num to last num input (happens when doing deleteOnce on operator)
     if (!input[input.length - 1].match(/^[\+\-\xD7\xF7]$/)) {
       input[input.length - 1] += numStr;
-      inputDisplay.textContent = input.join("");
       numStr = "";
-      return;
     }
   }
 
   inputDisplay.textContent = input.join("") + numStr;
 }
+
 
 function putSign(e) {
   if (isComputed) { // put sign to answer
@@ -120,8 +124,8 @@ function putSign(e) {
       input[0] = input[0].slice(1);
     }
   } else {
-    if (!numStr.match(/^\-/)) {
-      if (numStr != "0") {
+    if (numStr && !numStr.match(/^\-/)) {
+      if (numStr != "0" && numStr != "0.") {
         numStr = "-" + numStr;
       }
     } else {
@@ -131,6 +135,7 @@ function putSign(e) {
 
   inputDisplay.textContent = input.join("") + numStr;
 }
+
 
 function operate(e) {
   if (!numStr && input.length === 0) {
@@ -183,6 +188,7 @@ function operate(e) {
   isComputed = true;
 }
 
+
 function deleteOnce() {
   if (inputDisplay.textContent === "" || isComputed) {
     return;
@@ -223,17 +229,19 @@ function deleteOnce() {
   }
 }
 
+
 function clearAll() {
   input = [];
   numStr = "";
   inputDisplay.textContent = "";
-  answerDisplay.style.fontStyle = "normal";
-  answerDisplay.style.color = "#ecf0f1";
   answerDisplay.textContent = "";
   ac.textContent = "AC";
 }
 
+
 function processKey(e) {
+  let targetButton;
+
   switch (e.key) {
     case "0":
     case "1":
@@ -247,6 +255,9 @@ function processKey(e) {
     case "9":
     case ".":
       ac.textContent = "C";
+      targetButton = document.querySelector(`button[data-key="${e.key}"]`);
+      targetButton.classList.add("left-pressed");
+
       processNum(e.key);
       break;
 
@@ -255,21 +266,33 @@ function processKey(e) {
     case "*":
     case "/":
       e.preventDefault(); // prevent divide button (/) from starting browser's find functionality
+      targetButton = document.querySelector(`button[data-key="${e.key}"]`);
+      targetButton.classList.add("right-pressed");
+
       processOperator(e.key);
       break;
 
     case "=":
     case ENTER:
+      targetButton = document.querySelector(`button[data-key="="]`);
+      targetButton.classList.add("right-pressed");
+
       operate();
       break;
 
     case BACKSPACE:
       e.preventDefault(); // prevent browser from going back to previous page
+      targetButton = document.querySelector(`button[data-key="${e.key}"]`);
+      targetButton.classList.add("left-pressed");
+
       deleteOnce();
       break;
 
     case "c":
     case "C":
+      targetButton = document.querySelector(`button[data-key="C"]`);
+      targetButton.classList.add("left-pressed");
+
       clearAll();
       break;
 
@@ -277,6 +300,26 @@ function processKey(e) {
       break;
   }
 }
+
+
+function updateColor(e) {
+  let parent = e.target.parentNode;
+
+  if (!e.target.className.includes("pressed")) {
+    if (parent.className === "left") {
+      e.target.classList.add("left-pressed");
+    } else if (parent.className === "right") {
+      e.target.classList.add("right-pressed");
+    }
+  } else if (e.propertyName === "transform") {
+    if (parent.className === "left") {
+      e.target.classList.remove("left-pressed");
+    } else if (parent.className === "right") {
+      e.target.classList.remove("right-pressed");
+    }
+  }
+}
+
 
 /* EVENT LISTENERS FOR MOUSE CLICK */
 let nums = document.querySelectorAll(".num");
@@ -308,7 +351,16 @@ ac.addEventListener("click", (e) => {
 let del = document.querySelector("#del");
 del.addEventListener("click", (e) => {
   deleteOnce();
-})
+});
+
 
 /* SUPPORT FOR KEYBOARD PRESS */
 document.addEventListener("keydown", processKey);
+
+
+/* VISUAL CUE FOR KEY PRESS */
+let buttons = document.querySelectorAll("button");
+buttons.forEach(button => {
+  button.addEventListener("click", updateColor);
+  button.addEventListener("transitionend", updateColor);
+});

@@ -7,11 +7,11 @@
 .container {
   display: flex;
   flex-direction: column;
-  width: 240px;
-  position: absolute;
-  top: 15%;
   left: 50%;
+  position: absolute;
+  top: 8%;
   transform: translateX(-50%);
+  width: 260px;
 }
 
 /* DISPLAY STYLES */
@@ -55,7 +55,7 @@ button {
   border-color: black;
   border-style: solid;
   border-width: 0 0 1px 1px;
-  font-size: 1.25em;
+  font-size: 1.3em;
   outline: none;
 }
 
@@ -71,9 +71,10 @@ button {
 }
 
 .left > button {
-  background: #bdc3c7;
+  background: #b2bec3;
   float: left;
   height: 20%;
+  transition: all .05s ease;
   width: 33.3%;
 }
 
@@ -86,9 +87,21 @@ button {
   border-right: 1px solid black;
   color: #ecf0f1;
   height: 20%;
+  transition: all .05s ease;
   width: 100%;
 }
 
 .two-buttons {
   width: 66.67% !important;
+}
+
+/* BUTTON CLICK/PRESS EFFECTS */
+.left-pressed {
+  background: #95a5a6 !important;
+  transform: scale(1);
+}
+
+.right-pressed {
+  background: #e67e22 !important;
+  transform: scale(1);
 }
